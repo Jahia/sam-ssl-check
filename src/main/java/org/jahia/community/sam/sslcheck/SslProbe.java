@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.jcr.RepositoryException;
 import javax.net.ssl.HttpsURLConnection;
 import org.jahia.modules.sam.Probe;
@@ -31,6 +32,7 @@ public class SslProbe implements Probe {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SslProbe.class);
     private HttpClientService clientService = (HttpClientService) SpringContextSingleton.getBean("HttpClientService");
+    private int nbDays = 7;
 
     @Override
     public String getName() {
@@ -48,7 +50,7 @@ public class SslProbe implements Probe {
         final Date currentDate = new Date();
         final Calendar calendar = new GregorianCalendar();
         calendar.setTime(currentDate);
-        calendar.add(Calendar.DAY_OF_YEAR, 7);
+        calendar.add(Calendar.DAY_OF_YEAR, nbDays);
         try {
             boolean allSslValid = true;
             final JahiaSitesService jahiaSitesService = JahiaSitesService.getInstance();
@@ -76,7 +78,7 @@ public class SslProbe implements Probe {
             if (allSslValid) {
                 status = new ProbeStatus("SSL certificates are valid", ProbeStatus.Health.GREEN);
             } else {
-                status = new ProbeStatus(String.format("The following certificates are invalid or are going to expire in less than 7 days: %s", invalidSsl.toString()), ProbeStatus.Health.RED);
+                status = new ProbeStatus(String.format("The following certificates are invalid or are going to expire in less than %s days: %s", nbDays, invalidSsl.toString()), ProbeStatus.Health.RED);
             }
         } catch (RepositoryException ex) {
             final String msg = "Impossible to check the SSL certificates";
@@ -123,5 +125,12 @@ public class SslProbe implements Probe {
             LOGGER.debug(String.format("Impossible to check %s", hostname), ex);
         }
         return result;
+    }
+
+    @Override
+    public void setConfig(Map<String, Object> config) {
+        if (config.containsKey("nb_days")) {
+            nbDays = Integer.parseInt("nb_days");
+        }
     }
 }
