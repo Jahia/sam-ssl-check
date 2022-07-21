@@ -10,7 +10,7 @@
     <groupId>org.jahia.community</groupId>
     <artifactId>sam-ssl-check</artifactId>
     <name>Server Availability Manager - SSL Check</name>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>bundle</packaging>
     <description>The purpose of this module is to add a probe to the Server Availability Manager to check if the SSL certificates used for a website are valid and are not going to expire in the next 7 days.
     </description>
@@ -19,7 +19,7 @@
         <connection>scm:git:git@github.com:Jahia/sam-ssl-check.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/sam-ssl-check.git</developerConnection>
         <url>scm:git:git@github.com:Jahia/sam-ssl-check.git</url>
-        <tag>HEAD</tag>
+        <tag>1_0_1</tag>
     </scm>
     
     <properties>
