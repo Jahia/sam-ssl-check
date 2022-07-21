@@ -20,9 +20,7 @@ import org.jahia.modules.sam.ProbeStatus;
 import org.osgi.service.component.annotations.Component;
 
 import org.jahia.modules.sam.ProbeSeverity;
-import org.jahia.services.SpringContextSingleton;
 import org.jahia.services.content.decorator.JCRSiteNode;
-import org.jahia.services.notification.HttpClientService;
 import org.jahia.services.sites.JahiaSitesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +29,6 @@ import org.slf4j.LoggerFactory;
 public class SslProbe implements Probe {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SslProbe.class);
-    private HttpClientService clientService = (HttpClientService) SpringContextSingleton.getBean("HttpClientService");
     private int nbDays = 7;
 
     @Override
@@ -46,7 +43,7 @@ public class SslProbe implements Probe {
 
     @Override
     public ProbeStatus getStatus() {
-        ProbeStatus status = null;
+        ProbeStatus status;
         final Date currentDate = new Date();
         final Calendar calendar = new GregorianCalendar();
         calendar.setTime(currentDate);
@@ -84,9 +81,8 @@ public class SslProbe implements Probe {
             final String msg = "Impossible to check the SSL certificates";
             status = new ProbeStatus(msg, ProbeStatus.Health.RED);
             LOGGER.error(msg, ex);
-        } finally {
-            return status;
         }
+        return status;
     }
 
     @Override
@@ -103,16 +99,16 @@ public class SslProbe implements Probe {
             conn.connect();
             for (Certificate certificate : conn.getServerCertificates()) {
                 final X509Certificate xCertificate = (X509Certificate) certificate;
-                final List<String> DNs = new ArrayList<String>();
-                DNs.add(xCertificate.getSubjectDN().getName());
+                final List<String> validHostnames = new ArrayList<>();
+                validHostnames.add(xCertificate.getSubjectDN().getName());
                 final Collection<List<?>> alternativeNames = xCertificate.getSubjectAlternativeNames();
                 if (alternativeNames != null) {
                     final Iterator<List<?>> alternativeNamesIterator = alternativeNames.iterator();
                     while (alternativeNamesIterator.hasNext()) {
-                        DNs.add((String) alternativeNamesIterator.next().get(1));
+                        validHostnames.add((String) alternativeNamesIterator.next().get(1));
                     }
                 }
-                if (DNs.contains(hostname)) {
+                if (validHostnames.contains(hostname)) {
                     result = !calendar.after(xCertificate.getNotAfter());
                     break;
                 } else {
